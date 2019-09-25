@@ -109,22 +109,23 @@ def convolve2d(img, kernel):
     """
     # TODO: implement this function.
 
-    padded_img = utils.zero_pad(img, 1, 1)
-    new_img = [[0 for x in range(len(img)+2)] for y in range(len(img)+2)]
-    kernel = utils.flip2d(kernel)
+    img_h = len(img)
+    img_w = len(img[0])
+    padded_img = utils.zero_pad(img, 1, 1)  # Pads img with zero at the border.
+    new_img = [[0 for x in range(img_w)] for y in range(img_h)]  # Create a new two-dimensional list to store the calculated values
+    kernel = utils.flip2d(kernel)  # flips the kernel
     kernel_h = len(kernel)
     kernel_w = len(kernel[0])
-    pad_h = len(padded_img)
-    pad_w = len(padded_img[0])
-    for m in range(pad_h-2):
-        for n in range(pad_w-2):
+
+    for m in range(img_h):
+        for n in range(img_w):
             s = 0
             for x in range(kernel_h):
                 for y in range(kernel_w):
-                    s = s + kernel[y][x] * padded_img[m+kernel_h-y-1][n+kernel_w-x-1]
-            new_img[m+1][n+1] = s
+                    s = s + kernel[x][y] * padded_img[m + x][n + y]
+            new_img[m][n] = s
 
-    return utils.crop(new_img, 1, len(new_img)-1, 1, len(new_img)-1)
+    return new_img
 
     raise NotImplementedError
 
@@ -133,8 +134,6 @@ def main():
     args = parse_args()
 
     img = read_image(args.img_path)
-    print(len(img))
-    print(len(img[0]))
 
     if args.filter == "low-pass":
         kernel = low_pass
@@ -147,10 +146,7 @@ def main():
         os.makedirs(args.rs_dir)
 
     filtered_img = convolve2d(img, kernel)
-    print(filtered_img)
-    print(len(filtered_img))
-    print(len(filtered_img[0]))
-    print(filtered_img[0][255])
+
     write_image(filtered_img, os.path.join(args.rs_dir, "{}.jpg".format(args.filter)))
 
 

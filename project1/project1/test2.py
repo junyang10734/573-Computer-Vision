@@ -42,7 +42,7 @@ def parse_args():
         "--result-saving-path",
         dest="rs_path",
         type=str,
-        default="./results/task2-1.json",
+        default="./results/task2.json",
         help="path to file which results are saved (do not change this arg)"
     )
     args = parser.parse_args()
@@ -139,7 +139,7 @@ def match(img, template):
                 patch.append(row)
             conv = norm_xcorr2d(patch, template)
             match_matrix[m][n] = conv
-            # print('[' + str(m) + ', ' + str(n) + ']:     ' + str(conv))
+            print('[' + str(m) + ', ' + str(n) + ']:     ' + str(conv))
 
     max_x, max_y, max_value = -1, -1, -1
     for x in range(len(match_matrix)):

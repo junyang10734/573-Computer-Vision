@@ -16,7 +16,7 @@ Do NOT import ANY library (function, module, etc.).
 import argparse
 import json
 import os
-import time
+# import time
 
 import utils
 
@@ -72,25 +72,23 @@ def norm_xcorr2d(patch, template):
         g_c = 0
         g_t = 0
         for x1 in range(xn):
-            for y1 in range(yn):
-                g_t = g_t + template[x1][y1]
-                g_c = g_c + 1
+            g_t += sum(template[x1])
+            g_c += yn
         g_mean = g_t / g_c
-        for x in range(xn):
-            for y in range(yn):
-                gl.append(template[x][y] - g_mean)
+        for x1 in range(xn):
+            for y1 in range(yn):
+                gl.append(template[x1][y1] - g_mean)
 
     f_t = 0
     f_c = 0
     fl = []
     for x2 in range(xn):
-        for y2 in range(yn):
-            f_t = f_t + patch[x2][y2]
-            f_c = f_c + 1
+        f_t += sum(patch[x2])
+        f_c += yn
     f_mean = f_t / f_c
-    for x in range(xn):
-        for y in range(yn):
-            fl.append(patch[x][y] - f_mean)
+    for x2 in range(xn):
+        for y2 in range(yn):
+            fl.append(patch[x2][y2] - f_mean)
 
     a, b, c = -1, -1, -1
     for i in range(len(gl)):
@@ -155,7 +153,7 @@ def save_results(coordinates, template, template_name, rs_directory):
 
 
 def main():
-    start = time.time()
+    # start = time.time()
     global gl
     args = parse_args()
     img = read_image(args.img_path)
@@ -165,6 +163,7 @@ def main():
     # cv2.imwrite("./data/proj1-task2-template.jpg", template)
 
     template = read_image(args.template_path)
+
     x, y, max_value = match(img, template)
     max_value = round(max_value, 3)
 
@@ -172,8 +171,8 @@ def main():
     with open(args.rs_path, "w") as file:
         json.dump({"x": x, "y": y, "value": max_value}, file)
 
-    end = time.time()
-    print('程序执行时间: ', end - start)
+    # end = time.time()
+    # print('程序执行时间: ', end - start)
 
 
 if __name__ == "__main__":
