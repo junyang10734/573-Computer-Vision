@@ -16,7 +16,6 @@ Do NOT import ANY library (function, module, etc.).
 import argparse
 import json
 import os
-# import time
 
 import utils
 
@@ -66,6 +65,7 @@ def norm_xcorr2d(patch, template):
     xn = len(template)
     yn = len(template[0])
 
+
     if gl:
         pass
     else:
@@ -90,13 +90,16 @@ def norm_xcorr2d(patch, template):
         for y2 in range(yn):
             fl.append(patch[x2][y2] - f_mean)
 
-    a, b, c = -1, -1, -1
+    a, b, c = 0, 0, 0
     for i in range(len(gl)):
         a = a + gl[i] * fl[i]
         b = b + gl[i] * gl[i]
         c = c + fl[i] * fl[i]
 
-    conv = a / (np.sqrt(b*c))
+    if b*c > 0:
+        conv = a / (np.sqrt(b*c))
+    else:
+        conv = 0
     return conv
 
     raise NotImplementedError
@@ -153,7 +156,7 @@ def save_results(coordinates, template, template_name, rs_directory):
 
 
 def main():
-    # start = time.time()
+
     global gl
     args = parse_args()
     img = read_image(args.img_path)
@@ -165,14 +168,12 @@ def main():
     template = read_image(args.template_path)
 
     x, y, max_value = match(img, template)
-    max_value = round(max_value, 3)
+    # max_value = round(max_value, 3)
 
     # The correct results are: x: 17, y: 129, max_value: 0.994
     with open(args.rs_path, "w") as file:
         json.dump({"x": x, "y": y, "value": max_value}, file)
 
-    # end = time.time()
-    # print('程序执行时间: ', end - start)
 
 
 if __name__ == "__main__":
