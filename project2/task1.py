@@ -35,8 +35,10 @@ def solution(input_points, t, d, k):
     num = len(input_points)
     i = 0
     pList = []
-    final_dis = 0
+    final_err = 9999
+
     while i < k and i < num*(num-1)/2:
+        # store inlier points and outlier points of the current iteration
         this_inlier_points = []
         this_outlier_points = []
 
@@ -44,6 +46,7 @@ def solution(input_points, t, d, k):
 
         str1 = p[0]['name']+p[1]['name']
         str2 = p[1]['name']+p[0]['name']
+        # randomly select two points, if the two points have been calculated before, randomly select the points again.
         if str1 not in pList and str2 not in pList:
             this_inlier_points.append(p[0]['name'])
             this_inlier_points.append(p[1]['name'])
@@ -52,7 +55,6 @@ def solution(input_points, t, d, k):
                 p = random.sample(input_points, 2)
                 str1 = p[0]['name']+p[1]['name']
                 str2 = p[1]['name']+p[0]['name']
-
             this_inlier_points.append(p[0]['name'])
             this_inlier_points.append(p[1]['name'])
 
@@ -62,12 +64,12 @@ def solution(input_points, t, d, k):
         x2 = p[1]['value'][0]
         y1 = p[0]['value'][1]
         y2 = p[1]['value'][1]
-        
+
         line_type = 0
-        if x2-x1 == 0:
+        if x2 == x1:
             line_type = 1  # the line is parallel to y-axis
             m = x2
-        elif y2-y1 == 0:
+        elif y2 == y1:
             line_type = 2  # the line is parallel to x-axis
             m = y1
 
@@ -82,24 +84,27 @@ def solution(input_points, t, d, k):
                     distance = x0 - m
                 else:
                     distance = y0 - m
-
-                this_dis = this_dis + distance
+                
+                # judge whether it is an inlier point or a outlier point by distance 
                 if abs(distance) > t:
                     this_outlier_points.append(item['name'])
                 else:
                     this_inlier_points.append(item['name'])
+                    this_dis += abs(distance)
 
-        if len(this_inlier_points) > d and this_dis > final_dis:
-            inlier_points_names = this_inlier_points
-            outlier_points_names = this_outlier_points
-            final_dis = this_dis
+        if (len(this_inlier_points) - 2) >= d:
+            # calculate error, if current error less than final_err,
+            # then set final_err, inlier_points_names and outlier_points_names as current data
+            this_err = this_dis / (len(this_inlier_points) - 2)
+            if this_err < final_err:
+                inlier_points_names = this_inlier_points
+                outlier_points_names = this_outlier_points
+                final_err = this_err
 
         i = i+1
 
     inlier_points_names.sort()
     outlier_points_names.sort()
-    print(inlier_points_names)
-    print(outlier_points_names)
     return inlier_points_names, outlier_points_names
     raise NotImplementedError
 
@@ -109,17 +114,15 @@ def getDis(pointx, pointy, linex1, liney1, linex2, liney2):
     a = liney2-liney1
     b = linex1-linex2
     c = linex2*liney1-linex1*liney2
-    dis = (abs(a*pointx+b*pointy+c))/(pow(a*a+b*b,0.5))
+    dis = (abs(a*pointx+b*pointy+c))/(pow(a*a+b*b, 0.5))
     return dis
 
 
 if __name__ == "__main__":
     input_points = [{'name': 'a', 'value': (0.0, 1.0)}, {'name': 'b', 'value': (2.0, 1.0)},
-                    {'name': 'c', 'value': (3.0, 1.0)}, {
-        'name': 'd', 'value': (0.0, 3.0)},
-        {'name': 'e', 'value': (1.0, 2.0)}, {
-        'name': 'f', 'value': (1.5, 1.5)},
-        {'name': 'g', 'value': (1.0, 1.0)}, {'name': 'h', 'value': (1.5, 2.0)}]
+                    {'name': 'c', 'value': (3.0, 1.0)}, {'name': 'd', 'value': (0.0, 3.0)},
+                    {'name': 'e', 'value': (1.0, 2.0)}, {'name': 'f', 'value': (1.5, 1.5)},
+                    {'name': 'g', 'value': (1.0, 1.0)}, {'name': 'h', 'value': (1.5, 2.0)}]
 
     t = 0.5
     d = 3

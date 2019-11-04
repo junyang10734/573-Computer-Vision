@@ -15,6 +15,7 @@ APIs that have “stitch”, “Stitch”, “match” or “Match” in their n
 """
 import cv2
 import numpy as np
+import random
 
 
 # find keypoints and use SIFT descriptors to extract features for these keypoints
@@ -26,7 +27,7 @@ def sift(img):
     return kp, des
 
 
-# match the keypoints between two images
+# match keypoints between two images
 def matchKeypoints(des1, des2):
     # use KNN-matching algorithm to get the two closest descriptor
     matcher = cv2.DescriptorMatcher_create("BruteForce")
@@ -36,7 +37,7 @@ def matchKeypoints(des1, des2):
     # calculate the ratio between the two closest distance
     # if the ratio is greater than the predetermined value, it is taken as the final match.
     for item in knn_match:
-        if len(item) == 2 and item[0].distance < item[1].distance * 0.7:
+        if len(item) == 2 and item[0].distance < item[1].distance * 0.75:
             matches.append((item[0].trainIdx, item[0].queryIdx))
     return matches
 
@@ -46,16 +47,17 @@ def findHomography(kp1, kp2, matches):
     if len(matches) > 4:
         pt1 = np.float32([kp1[i] for (_, i) in matches])
         pt2 = np.float32([kp2[i] for (i, _) in matches])
-        (M, status) = cv2.findHomography(pt1, pt2, cv2.RANSAC, 3)
-        # return the matches along with the homograpy matrix and status of each matched point
+        (M, status) = cv2.findHomography(pt1, pt2, cv2.RANSAC, 5.0)  # return the matches along with the homograpy matrix and status of each matched point
         return M
     else:
-        return None, None
+        return None
 
 
 #  stitch the two given images
 def stitch(img1, img2, HM):
-    wrap = cv2.warpPerspective(img1, HM, (img1.shape[1] + img2.shape[1], img1.shape[0]))
+    # Applies a perspective transformation to an image.
+    wrap = cv2.warpPerspective(img1, HM, (img1.shape[1] + img2.shape[1], img1.shape[0]+img2.shape[0]))
+    # stitch the left image
     wrap[0:img2.shape[0], 0:img2.shape[1]] = img2
 
     # remove the black border
